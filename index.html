@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>직원 취향 & 알러지 설문조사</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap');
+
+  :root {
+    --bg: #F7F5F0;
+    --surface: #FFFFFF;
+    --primary: #2D5016;
+    --accent: #7BAE4C;
+    --accent-light: #EAF3DC;
+    --text: #1A1A1A;
+    --text-muted: #6B6B6B;
+    --border: #DDDBD5;
+    --error: #C0392B;
+    --success: #27AE60;
+    --tag-bg: #EAF3DC;
+    --tag-text: #2D5016;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 48px 24px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    bottom: -30px; left: 50%;
+    transform: translateX(-50%);
+    width: 120px; height: 60px;
+    background: var(--bg);
+    border-radius: 60px 60px 0 0;
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.65;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(24px, 5vw, 36px);
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 14px;
+  }
+  .header p {
+    font-size: 14px;
+    opacity: 0.75;
+    max-width: 420px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    max-width: 640px;
+    margin: 50px auto 0;
+    padding: 0 20px;
+  }
+  .progress-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  /* Form */
+  .form-wrap {
+    max-width: 640px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 28px 28px 24px;
+    border: 1px solid var(--border);
+    transition: box-shadow 0.2s;
+  }
+  .card:focus-within {
+    box-shadow: 0 0 0 2px var(--accent);
+    border-color: var(--accent);
+  }
+  .card-num {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .card label.card-title {
+    display: block;
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 4px;
+    cursor: default;
+  }
+  .card-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  /* Text input */
+  input[type="text"], textarea, select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--bg);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    background: white;
+  }
+  textarea { resize: vertical; min-height: 90px; }
+
+  /* Tag-style checkbox/radio grid */
+  .tag-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tag-grid input[type="checkbox"],
+  .tag-grid input[type="radio"] {
+    display: none;
+  }
+  .tag-grid label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--border);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg);
+    user-select: none;
+  }
+  .tag-grid input:checked + label {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--primary);
+    font-weight: 500;
+  }
+  .tag-grid label:hover {
+    border-color: var(--accent);
+  }
+
+  /* Allergy severity */
+  .severity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .severity-grid input[type="radio"] { display: none; }
+  .severity-grid label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 1.5px solid var(--border);
+    font-size: 12px;
+    cursor: pointer;
+    text-align: center;
+    gap: 4px;
+    background: var(--bg);
+    transition: all 0.15s;
+  }
+  .severity-grid input:checked + label {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .severity-icon { font-size: 20px; }
+
+  /* Custom allergy input */
+  .allergy-custom-wrap {
+    margin-top: 14px;
+    display: none;
+  }
+  .allergy-custom-wrap.visible { display: block; }
+
+  /* Divider */
+  .section-divider {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-divider::before, .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Submit */
+  .submit-wrap {
+    text-align: center;
+    padding-top: 8px;
+  }
+  .btn-submit {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 16px 48px;
+    border-radius: 40px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .btn-submit:hover { background: #3e6e20; }
+  .btn-submit:active { transform: scale(0.98); }
+  .submit-note {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 12px;
+  }
+
+  /* Success screen */
+  .success-screen {
+    display: none;
+    text-align: center;
+    padding: 60px 24px;
+    max-width: 480px;
+    margin: 60px auto 0;
+    background: var(--surface);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+  }
+  .success-screen.visible { display: block; }
+  .success-icon { font-size: 52px; margin-bottom: 20px; }
+  .success-screen h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 24px;
+    margin-bottom: 12px;
+    color: var(--primary);
+  }
+  .success-screen p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.8;
+    margin-bottom: 24px;
+  }
+  .btn-new {
+    background: var(--accent-light);
+    color: var(--primary);
+    border: 1.5px solid var(--accent);
+    padding: 12px 32px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background 0.2s;
+  }
+  .btn-new:hover { background: #d8edbd; }
+
+  /* Results panel */
+  .results-panel {
+    max-width: 640px;
+    margin: 32px auto 0;
+    padding: 0 20px;
+    display: none;
+  }
+  .results-panel.visible { display: block; }
+  .results-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .result-entry {
+    background: var(--surface);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+  .result-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--accent-light);
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .result-name { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .result-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+  .result-tag {
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+  }
+  .result-tag.allergy {
+    background: #FDEDEB;
+    color: #C0392B;
+  }
+  .result-tag.avoid {
+    background: #FEF9E7;
+    color: #9A7D0A;
+  }
+
+  /* Download button */
+  .btn-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+  }
+  .btn-download:hover { border-color: var(--accent); color: var(--primary); }
+
+  @media (max-width: 480px) {
+    .card { padding: 20px 18px; }
+    .severity-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Team Meal Survey</div>
+  <h1>직원 취향 &amp; 알러지<br>설문조사</h1>
+  <p>회식 및 팀 점심 메뉴 선정을 위해<br>개인 취향과 식이 제약을 수집합니다.</p>
+</div>
+
+<div id="mainForm">
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="progressLabel">0 / 6 완료</span>
+      <span id="progressPct">0%</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="form-wrap" id="formWrap">
+
+    <!-- 1. 이름 -->
+    <div class="card" data-field="name">
+      <div class="card-num">01</div>
+      <label class="card-title" for="name">이름 / 직함</label>
+      <div class="card-hint">팀원이 알 수 있는 이름으로 입력해 주세요.</div>
+      <input type="text" id="name" placeholder="예) 김대리, 이책임 …" autocomplete="off" oninput="updateProgress()">
+    </div>
+
+    <!-- 2. 선호 음식 -->
+    <div class="card" data-field="prefer">
+      <div class="card-num">02</div>
+      <label class="card-title">선호하는 음식 종류 <span style="font-weight:400;font-size:13px;color:var(--text-muted)">(복수 선택 가능)</span></label>
+      <div class="card-hint">자주 먹고 싶은 종류를 모두 선택하세요.</div>
+      <div class="tag-grid" id="preferGrid">
+        <input type="checkbox" id="p1" name="prefer" value="한식"><label for="p1">🍚 한식</label>
+        <input type="checkbox" id="p2" name="prefer" value="일식"><label for="p2">🍱 일식</label>
+        <input type="checkbox" id="p3" name="prefer" value="중식"><label for="p3">🥢 중식</label>
+        <input type="checkbox" id="p4" name="prefer" value="양식"><label for="p4">🍝 양식</label>
+        <input type="checkbox" id="p5" name="prefer" value="분식"><label for="p5">🍜 분식</label>
+        <input type="checkbox" id="p6" name="prefer" value="샐러드"><label for="p6">🥗 샐러드</label>
+        <input type="checkbox" id="p7" name="prefer" value="고기구이"><label for="p7">🥩 고기구이</label>
+        <input type="checkbox" id="p8" name="prefer" value="국물요리"><label for="p8">🍲 국물요리</label>
+        <input type="checkbox" id="p9" name="prefer" value="샌드위치/버거"><label for="p9">🥪 샌드위치/버거</label>
+        <input type="checkbox" id="p10" name="prefer" value="기타"><label for="p10">➕ 기타</label>
+      </div>
+      <div class="allergy-custom-wrap" id="preferOtherWrap">
+        <input type="text" id="preferOther" placeholder="기타 선호 음식을 입력하세요" style="margin-top:4px" oninput="updateProgress()">
+      </div>
+    </div>
+
+    <!-- 3. 비선호 음식 -->
+    <div class="card" data-field="avoid">
+      <div class="card-num">03</div>
+      <label class="card-title">피하고 싶은 음식 <span style="font-weight:400;font-size:13px;color:var(--text-muted)">(복수 선택 가능)</span></label>
+      <div class="card-hint">가급적 제외되었으면 하는 음식을 선택하세요.</div>
+      <div class="tag-grid">
+        <input type="checkbox" id="a1" name="avoid" value="매운음식"><label for="a1">🌶️ 매운음식</label>
+        <input type="checkbox" id="a2" name="avoid" value="기름진음식"><label for="a2">🍟 기름진 음식</label>
+        <input type="checkbox" id="a3" name="avoid" value="해산물"><label for="a3">🦐 해산물</label>
+        <input type="checkbox" id="a4" name="avoid" value="면류"><label for="a4">🍜 면류</label>
+        <input type="checkbox" id="a5" name="avoid" value="국물"><label for="a5">🍵 국물</label>
+        <input type="checkbox" id="a6" name="avoid" value="샐러드만"><label for="a6">🥗 샐러드(메인)</label>
+        <input type="checkbox" id="a7" name="avoid" value="생선"><label for="a7">🐟 생선</label>
+        <input type="checkbox" id="a8" name="avoid" value="치즈"><label for="a8">🧀 치즈</label>
+        <input type="checkbox" id="a9" name="avoid" value="고수"><label for="a9">🌿 고수</label>
+        <input type="checkbox" id="a10" name="avoid" value="없음"><label for="a10">✅ 없음</label>
+        <input type="checkbox" id="a11" name="avoid" value="기타"><label for="a11">➕ 기타</label>
+      </div>
+      <div class="allergy-custom-wrap" id="avoidOtherWrap">
+        <input type="text" id="avoidOther" placeholder="기타 비선호 음식을 입력하세요" style="margin-top:4px">
+      </div>
+    </div>
+
+    <!-- 4. 알러지/제약 -->
+    <div class="card" data-field="allergy">
+      <div class="card-num">04</div>
+      <label class="card-title">알러지 / 식이 제약</label>
+      <div class="card-hint">해당하는 항목을 모두 선택해 주세요.</div>
+      <div class="tag-grid" id="allergyGrid">
+        <input type="checkbox" id="al0" name="allergy" value="없음" onchange="toggleNone(this, 'allergy')"><label for="al0">✅ 없음</label>
+        <input type="checkbox" id="al1" name="allergy" value="새우알러지" onchange="clearNone('allergy')"><label for="al1">🦐 새우 알러지</label>
+        <input type="checkbox" id="al2" name="allergy" value="유당민감" onchange="clearNone('allergy')"><label for="al2">🥛 유당 불내증</label>
+        <input type="checkbox" id="al3" name="allergy" value="견과류알러지" onchange="clearNone('allergy')"><label for="al3">🥜 견과류 알러지</label>
+        <input type="checkbox" id="al4" name="allergy" value="글루텐" onchange="clearNone('allergy')"><label for="al4">🌾 글루텐 민감</label>
+        <input type="checkbox" id="al5" name="allergy" value="채식지향" onchange="clearNone('allergy')"><label for="al5">🌱 채식 지향</label>
+        <input type="checkbox" id="al6" name="allergy" value="할랄" onchange="clearNone('allergy')"><label for="al6">☪️ 할랄 필요</label>
+        <input type="checkbox" id="al7" name="allergy" value="기타" onchange="clearNone('allergy')"><label for="al7">➕ 기타</label>
+      </div>
+      <div class="allergy-custom-wrap" id="allergyOtherWrap">
+        <input type="text" id="allergyOther" placeholder="기타 알러지나 식이 제약을 직접 입력하세요" style="margin-top:4px">
+      </div>
+    </div>
+
+    <!-- 5. 식사 환경 선호 -->
+    <div class="card" data-field="env">
+      <div class="card-num">05</div>
+      <label class="card-title">식사 환경 선호</label>
+      <div class="card-hint">식당 분위기나 조건에서 중요한 항목을 선택하세요.</div>
+      <div class="tag-grid">
+        <input type="checkbox" id="e1" name="env" value="조용한장소"><label for="e1">🤫 조용한 분위기</label>
+        <input type="checkbox" id="e2" name="env" value="빠른식사"><label for="e2">⚡ 빠른 식사</label>
+        <input type="checkbox" id="e3" name="env" value="주차가능"><label for="e3">🅿️ 주차 가능</label>
+        <input type="checkbox" id="e4" name="env" value="카페근처"><label for="e4">☕ 커피 가까운 곳</label>
+        <input type="checkbox" id="e5" name="env" value="계산서필요"><label for="e5">🧾 계산서 발행</label>
+        <input type="checkbox" id="e6" name="env" value="고객동행가능"><label for="e6">👔 고객 동행 가능</label>
+        <input type="checkbox" id="e7" name="env" value="예산중요"><label for="e7">💰 예산 우선</label>
+        <input type="checkbox" id="e8" name="env" value="복귀시간중요"><label for="e8">⏰ 복귀 시간 중요</label>
+      </div>
+    </div>
+
+    <!-- 6. 기타 요청 -->
+    <div class="card" data-field="note">
+      <div class="card-num">06</div>
+      <label class="card-title" for="note">추가 요청사항</label>
+      <div class="card-hint">메뉴 선정 시 고려해 줬으면 하는 사항을 자유롭게 적어 주세요.</div>
+      <textarea id="note" placeholder="예) 오후 회의 전에 가볍게 먹고 싶어요 / 12:50까지는 복귀해야 합니다 …" oninput="updateProgress()"></textarea>
+    </div>
+
+    <div class="submit-wrap">
+      <button class="btn-submit" onclick="submitForm()">제출하기 →</button>
+      <div class="submit-note">입력 내용은 팀 내 식사 계획에만 활용됩니다.</div>
+    </div>
+
+  </div><!-- /form-wrap -->
+</div><!-- /mainForm -->
+
+<!-- Success -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">🎉</div>
+  <h2>제출 완료!</h2>
+  <p>응답해 주셔서 감사합니다.<br>취향을 잘 반영한 메뉴로 식사를 준비하겠습니다.</p>
+  <button class="btn-new" onclick="resetForm()">다른 분이 응답하기</button>
+</div>
+
+<!-- Results -->
+<div class="results-panel" id="resultsPanel">
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+    <div class="results-title">📋 수집된 응답 <span id="resultCount" style="font-size:14px;color:var(--text-muted);font-family:'Noto Sans KR'"></span></div>
+    <button class="btn-download" onclick="downloadCSV()">⬇ CSV 다운로드</button>
+  </div>
+  <div id="resultsList"></div>
+</div>
+
+<script>
+// ── 데이터 ──────────────────────────────────────────────
+const EXISTING = [
+  {name:"김대리", prefer:"한식,국물", avoid:"매운음식", allergy:"없음", env:"", note:"오후 회의 전 가벼운 식사 선호"},
+  {name:"이책임", prefer:"일식,덮밥", avoid:"기름진음식", allergy:"없음", env:"빠른식사", note:"빠른 식사 선호"},
+  {name:"박선임", prefer:"샐러드,분식", avoid:"해산물", allergy:"새우알러지", env:"", note:"채소 많은 메뉴 선호"},
+  {name:"최부장", prefer:"한식,고기구이", avoid:"면류", allergy:"없음", env:"조용한장소", note:"조용한 장소 선호"},
+  {name:"정사원", prefer:"양식,버거", avoid:"국물", allergy:"없음", env:"카페근처", note:"커피 가까운 곳 선호"},
+  {name:"오매니저", prefer:"비빔밥,한식", avoid:"치즈", allergy:"유당민감", env:"계산서필요", note:"계산서 필요"},
+  {name:"한주임", prefer:"중식,덮밥", avoid:"생선", allergy:"없음", env:"", note:"매운맛 보통"},
+  {name:"강책임", prefer:"고기구이,찌개", avoid:"샐러드만", allergy:"없음", env:"주차가능", note:"주차 가능 선호"},
+  {name:"유대리", prefer:"분식,일식", avoid:"고수", allergy:"없음", env:"예산중요", note:"예산 중요"},
+  {name:"송사원", prefer:"샌드위치/버거,샐러드", avoid:"매운음식", allergy:"채식지향", env:"", note:"육류 적은 메뉴 선호"},
+  {name:"남PM", prefer:"한식,중식", avoid:"대기긴곳", allergy:"없음", env:"복귀시간중요", note:"12:50 전 복귀 필요"},
+  {name:"문대표", prefer:"한식", avoid:"", allergy:"없음", env:"고객동행가능,조용한장소", note:"고객 동행 가능성 있음"}
+];
+
+let responses = [...EXISTING];
+
+// ── Progress ─────────────────────────────────────────────
+function updateProgress() {
+  const fields = [
+    document.getElementById('name').value.trim(),
+    [...document.querySelectorAll('input[name="prefer"]:checked')].length > 0,
+    [...document.querySelectorAll('input[name="avoid"]:checked')].length > 0,
+    [...document.querySelectorAll('input[name="allergy"]:checked')].length > 0,
+    [...document.querySelectorAll('input[name="env"]:checked')].length > 0,
+    document.getElementById('note').value.trim()
+  ];
+  const done = fields.filter(f => f).length;
+  const pct = Math.round((done / 6) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = done + ' / 6 완료';
+  document.getElementById('progressPct').textContent = pct + '%';
+}
+
+// Watch checkboxes for progress
+document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+  cb.addEventListener('change', updateProgress);
+});
+
+// ── Toggle helpers ────────────────────────────────────────
+document.getElementById('p10').addEventListener('change', function() {
+  document.getElementById('preferOtherWrap').classList.toggle('visible', this.checked);
+});
+document.getElementById('a11').addEventListener('change', function() {
+  document.getElementById('avoidOtherWrap').classList.toggle('visible', this.checked);
+});
+document.getElementById('al7').addEventListener('change', function() {
+  document.getElementById('allergyOtherWrap').classList.toggle('visible', this.checked);
+});
+
+function toggleNone(checkbox, name) {
+  if (checkbox.checked) {
+    document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+      if (cb !== checkbox) cb.checked = false;
+    });
+    document.getElementById('allergyOtherWrap').classList.remove('visible');
+  }
+}
+function clearNone(name) {
+  document.querySelector(`input[name="${name}"][value="없음"]`).checked = false;
+}
+
+// ── Submit ────────────────────────────────────────────────
+function submitForm() {
+  const name = document.getElementById('name').value.trim();
+  if (!name) {
+    alert('이름을 입력해 주세요.');
+    document.getElementById('name').focus();
+    return;
+  }
+
+  const prefer = [...document.querySelectorAll('input[name="prefer"]:checked')].map(c => c.value);
+  if (document.getElementById('p10').checked && document.getElementById('preferOther').value.trim()) {
+    prefer.push(document.getElementById('preferOther').value.trim());
+  }
+
+  const avoid = [...document.querySelectorAll('input[name="avoid"]:checked')].map(c => c.value);
+  if (document.getElementById('a11').checked && document.getElementById('avoidOther').value.trim()) {
+    avoid.push(document.getElementById('avoidOther').value.trim());
+  }
+
+  const allergy = [...document.querySelectorAll('input[name="allergy"]:checked')].map(c => c.value);
+  if (document.getElementById('al7').checked && document.getElementById('allergyOther').value.trim()) {
+    allergy.push(document.getElementById('allergyOther').value.trim());
+  }
+
+  const env = [...document.querySelectorAll('input[name="env"]:checked')].map(c => c.value);
+  const note = document.getElementById('note').value.trim();
+
+  responses.push({
+    name,
+    prefer: prefer.filter(v => v !== '기타').join(','),
+    avoid: avoid.filter(v => v !== '기타' && v !== '없음').join(','),
+    allergy: allergy.filter(v => v !== '기타').join(',') || '없음',
+    env: env.join(','),
+    note
+  });
+
+  document.getElementById('mainForm').style.display = 'none';
+  document.getElementById('successScreen').classList.add('visible');
+  renderResults();
+  document.getElementById('resultsPanel').classList.add('visible');
+}
+
+function resetForm() {
+  document.getElementById('name').value = '';
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+  document.getElementById('preferOtherWrap').classList.remove('visible');
+  document.getElementById('avoidOtherWrap').classList.remove('visible');
+  document.getElementById('allergyOtherWrap').classList.remove('visible');
+  document.getElementById('preferOther').value = '';
+  document.getElementById('avoidOther').value = '';
+  document.getElementById('allergyOther').value = '';
+  document.getElementById('note').value = '';
+  updateProgress();
+
+  document.getElementById('successScreen').classList.remove('visible');
+  document.getElementById('mainForm').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Render results ────────────────────────────────────────
+function renderResults() {
+  const list = document.getElementById('resultsList');
+  document.getElementById('resultCount').textContent = `(${responses.length}명)`;
+  list.innerHTML = '';
+
+  responses.forEach(r => {
+    const initial = r.name.slice(0, 1);
+    const allTags = (r.prefer || '').split(',').filter(Boolean)
+      .map(t => `<span class="result-tag">${t}</span>`).join('');
+    const avoidTags = (r.avoid || '').split(',').filter(Boolean)
+      .map(t => `<span class="result-tag avoid">❌ ${t}</span>`).join('');
+    const allergyTags = (r.allergy || '').split(',').filter(v => v && v !== '없음')
+      .map(t => `<span class="result-tag allergy">⚠️ ${t}</span>`).join('');
+    const envTags = (r.env || '').split(',').filter(Boolean)
+      .map(t => `<span class="result-tag" style="background:#EEF2FF;color:#3730a3">${t}</span>`).join('');
+
+    list.innerHTML += `
+      <div class="result-entry">
+        <div class="result-avatar">${initial}</div>
+        <div style="flex:1;min-width:0">
+          <div class="result-name">${r.name}</div>
+          <div class="result-tags">
+            ${allTags}${avoidTags}${allergyTags}${envTags}
+            ${r.note ? `<span class="result-tag" style="background:#F5F5F5;color:#555">💬 ${r.note}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+}
+
+// ── CSV Download ──────────────────────────────────────────
+function downloadCSV() {
+  const header = '이름,선호,비선호,제약조건,식사환경,비고';
+  const rows = responses.map(r =>
+    [r.name, r.prefer, r.avoid, r.allergy, r.env, r.note]
+      .map(v => `"${(v||'').replace(/"/g, '""')}"`)
+      .join(',')
+  );
+  const bom = '\uFEFF';
+  const csv = bom + header + '\n' + rows.join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = '직원_취향_알러지_설문결과.csv';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+</script>
+</body>
+</html>
